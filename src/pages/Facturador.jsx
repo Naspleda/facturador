@@ -1,19 +1,69 @@
 import { useState } from "react";
 
-import { Container, Grid, Paper, TextField, MenuItem, Typography } from "@mui/material";
+import { Box, Container, Grid, Paper, TextField, MenuItem, Typography } from "@mui/material";
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import dayjs, { Dayjs } from 'dayjs';
 
 const Facturador = () => {
   const [invoiceDate, setInvoiceDate] = useState(dayjs());
   const [dueDate, setDueDate] = useState(dayjs().add(30, 'day'));
   const [invoiceType, setInvoiceType] = useState("standard");
+
+  const columns = [
+    { field: 'id', headerName: 'ID', width: 70 },
+    { field: 'description', headerName: 'Description', width: 300, editable: true },
+    { 
+      field: 'quantity', 
+      headerName: 'Quantity', 
+      type: 'number', 
+      width: 100, 
+      editable: true,
+      valueFormatter: (params) => {
+        return params.value.toFixed(0);
+      }
+    },
+    { 
+      field: 'unitPrice', 
+      headerName: 'Unit Price', 
+      type: 'number', 
+      width: 120, 
+      editable: true,
+      valueFormatter: (params) => {
+        return `$${params.value.toFixed(2)}`;
+      }
+    },
+    { 
+      field: 'total', 
+      headerName: 'Total', 
+      type: 'number', 
+      width: 120,
+      valueFormatter: (params) => {
+        return `$${params.value.toFixed(2)}`;
+      }
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      width: 120,
+      renderCell: (params) => (
+        <IconButton 
+          color="error" 
+          onClick={() => handleDeleteRow(params.row.id)}
+        >
+          <Delete size={20} />
+        </IconButton>
+      ),
+    },
+  ];
+
   return (
     <>
+    <div style={{ backgroundColor: '#0f1214'}} className="h-screen">
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" >
         <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
         <Typography variant="h5" gutterBottom sx={{ mb: 3 }} color="primary">
               Invoice Details
@@ -80,12 +130,36 @@ const Facturador = () => {
         </Paper>
 
         <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
-        <Typography variant="h5" gutterBottom sx={{ mb: 3 }} color="primary">
-              Items
-            </Typography>
+          <Typography variant="h5" gutterBottom sx={{ mb: 3 }} color="primary">
+            Items
+          </Typography>
+
+          <Box sx={{ height: 400, width: '100%' }}>
+              <DataGrid
+                rows={products}
+                columns={columns}
+                processRowUpdate={(newRow, oldRow) => {
+                  const updatedRow = { ...newRow, total: newRow.quantity * newRow.unitPrice };
+                  handleCellEdit({
+                    id: updatedRow.id,
+                    field: 'total',
+                    value: updatedRow.total
+                  });
+                  return updatedRow;
+                }}
+                onProcessRowUpdateError={(error) => {
+                  console.error('Error updating row:', error);
+                }}
+                pageSizeOptions={[5, 10]}
+                checkboxSelection={false}
+                disableRowSelectionOnClick
+              />
+            </Box>
+
         </Paper>
       </Container>
       </LocalizationProvider>
+      </div>
     </>
   )
 }
