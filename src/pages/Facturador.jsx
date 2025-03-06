@@ -4,13 +4,17 @@ import { Box, Container, Grid, Paper, TextField, MenuItem, Typography } from "@m
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid } from '@mui/x-data-grid';
 import dayjs, { Dayjs } from 'dayjs';
 
 const Facturador = () => {
   const [invoiceDate, setInvoiceDate] = useState(dayjs());
   const [dueDate, setDueDate] = useState(dayjs().add(30, 'day'));
   const [invoiceType, setInvoiceType] = useState("standard");
+  const [products, setProducts] = useState([
+    { id: 1, description: 'Product 1', quantity: 2, unitPrice: 100, total: 200 },
+    { id: 2, description: 'Product 2', quantity: 1, unitPrice: 50, total: 50 },
+  ])
 
   const columns = [
     { field: 'id', headerName: 'ID', width: 70 },
@@ -22,7 +26,7 @@ const Facturador = () => {
       width: 100, 
       editable: true,
       valueFormatter: (params) => {
-        return params.value.toFixed(0);
+        return params.value.toFixed(0) || 0;
       }
     },
     { 
